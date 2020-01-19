@@ -3,6 +3,7 @@
 }
 .search-item{
     background-color: #DDDDDD;
+    margin-bottom: 3px;
 }
 
 .input{
@@ -18,4 +19,12 @@
     background-color: rgb(191, 255, 234);
     margin: 0 4px 4px 0;
     padding: 10px;
+}
+
+.current-weather-col{
+    background-color: rgb(191, 255, 234);
+}
+
+.five-day-forecast-title{
+    background-color: rgb(191, 255, 234);
 }
