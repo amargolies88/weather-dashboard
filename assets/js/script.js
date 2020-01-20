@@ -53,9 +53,11 @@ var tempDisplay = $("<p>").addClass("temp-display");
 var humidityDisplay = $("<p>").addClass("humidity-display");
 var windSpeedDisplay = $("<p>").addClass("wind-speed-display");
 var uvIndexDisplay = $("<p>").addClass("uv-index-display");
+var currentWeatherIcon = $("<img>").addClass("current-weather-icon");
+
 var fiveDayForecastCol = $("<div>").addClass("col-12 five-day-forecast-col")
 var fiveDayForecastRow = $("<div>").addClass("row no-gutters five-day-forecast-row");
-var fiveDayForecastTitleCol = $("<div>").addClass("col-12 mb-1 p-1 five-day-forecast-title");
+var fiveDayForecastTitleCol = $("<div>").addClass("col-12 forecast-block");
 
 if (localStorage.getItem("weathersearchhistory") === null) {
     weatherCol.hide();
@@ -64,7 +66,8 @@ if (localStorage.getItem("weathersearchhistory") === null) {
 console.log(localStorage.getItem("weathersearchhistory"));
 
 //Append page structure
-main.append(searchCol.append(searchBoxRow.append(searchForm.append(searchBox, searchButton)), currentLocationRow.append(currentLocationCol), searchHistoryRow), weatherCol.append(weatherRow.append(currentWeatherCol.append(cityTitle, tempDisplay, humidityDisplay, windSpeedDisplay, uvIndexDisplay), fiveDayForecastCol.append(fiveDayForecastRow.append(fiveDayForecastTitleCol)))));
+main.append(searchCol.append(searchBoxRow.append(searchForm.append(searchBox, searchButton)), currentLocationRow.append(currentLocationCol), searchHistoryRow), weatherCol.append(weatherRow.append(currentWeatherCol.append(cityTitle, tempDisplay, humidityDisplay, windSpeedDisplay, uvIndexDisplay, currentWeatherIcon))), fiveDayForecastCol.append(fiveDayForecastRow.append(fiveDayForecastTitleCol)));
+
 searchButton.append($("<svg>").addClass("svg-search").attr("data-feather", "search"));
 feather.replace({ class: 'svg-search', 'stroke-width': 4, 'width': 30, 'height': 30 });
 
@@ -122,6 +125,8 @@ function populateWeather(city, lat = "", lon = "") {
         tempDisplay.text(`Temperature: ${Math.round(ktof(response.main.temp))} °F`);
         humidityDisplay.text(`Humidity: ${response.main.humidity}%`);
         windSpeedDisplay.text(`Wind Speed: ${response.wind.speed} mph`);
+        console.log(response);
+        currentWeatherIcon.attr("src", "http://openweathermap.org/img/wn/" + response.weather[0].icon + "@2x.png");
         // console.log(response);
 
         //Change endpoint and make new api call because UV data is on a new endpoint
@@ -166,7 +171,7 @@ function populateWeather(city, lat = "", lon = "") {
                 for (let i = 0; i < fiveDayArray.length; i++) {
                     const element = fiveDayArray[i];
 
-                    var forecastBlock = $("<div>").addClass("text-nowrap p-2 col-12 col-sm forecast-block forecast-block-" + (i + 1));
+                    var forecastBlock = $("<div>").addClass("text-nowrap col-12 col-sm forecast-block forecast-block-" + (i + 1));
                     var forecastBlockDate = $("<h6>").addClass("forecast-block-date");
                     var forecastBlockIcon = $("<img>").addClass("forecast-block-img");
                     var forecastBlockTemp = $("<p>").addClass("forecast-block-temp");
