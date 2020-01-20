@@ -40,6 +40,8 @@ var searchBoxRow = $("<div>").addClass("row no-gutters search-box-row");
 var searchForm = $("<form>").addClass("search-form w-100 h-100 d-flex align-items-center");
 var searchBox = $("<input>").addClass("input w-100").attr({ 'type': 'text', 'name': 'searchbox', 'placeholder': 'Enter city name here' });
 var searchButton = $("<button>").addClass("btn btn-primary search-btn");
+var currentLocationRow = $("<div>").addClass("row no-gutters current-location-row");
+var currentLocationCol = $("<div>").addClass("col-12 py-2 px-1 current-location-col").text("Use Current Location");
 var searchHistoryRow = $("<div>").addClass("row no-gutters search-history-row");
 
 
@@ -55,31 +57,54 @@ var fiveDayForecastCol = $("<div>").addClass("col-12 five-day-forecast-col")
 var fiveDayForecastRow = $("<div>").addClass("row no-gutters five-day-forecast-row");
 var fiveDayForecastTitleCol = $("<div>").addClass("col-12 mb-1 p-1 five-day-forecast-title");
 
+if (localStorage.getItem("weathersearchhistory") === null) {
+    weatherCol.hide();
+}
+
+console.log(localStorage.getItem("weathersearchhistory"));
 
 //Append page structure
-main.append(searchCol.append(searchBoxRow.append(searchForm.append(searchBox, searchButton)), searchHistoryRow), weatherCol.append(weatherRow.append(currentWeatherCol.append(cityTitle, tempDisplay, humidityDisplay, windSpeedDisplay, uvIndexDisplay), fiveDayForecastCol.append(fiveDayForecastRow.append(fiveDayForecastTitleCol)))));
+main.append(searchCol.append(searchBoxRow.append(searchForm.append(searchBox, searchButton)), currentLocationRow.append(currentLocationCol), searchHistoryRow), weatherCol.append(weatherRow.append(currentWeatherCol.append(cityTitle, tempDisplay, humidityDisplay, windSpeedDisplay, uvIndexDisplay), fiveDayForecastCol.append(fiveDayForecastRow.append(fiveDayForecastTitleCol)))));
 searchButton.append($("<svg>").addClass("svg-search").attr("data-feather", "search"));
 feather.replace({ class: 'svg-search', 'stroke-width': 4, 'width': 30, 'height': 30 });
 
 //Function to update search history
 function populateHistory() {
+    //Empty searchHistoryRow
     searchHistoryRow.empty();
+    //Append all search items from searchHistory[]
     for (let i = 0; i < searchHistory.length; i++) {
         const searchItem = searchHistory[i];
-        var searchItemCol = $("<div>").addClass("col-12 search-item search-item-" + searchItem).attr("data-city", searchItem).text(searchItem);
-        searchItemCol.click(function(){
+        var searchItemCol = $("<div>").addClass("col-12 p-1 search-item search-item-" + searchItem).attr("data-city", searchItem).text(searchItem);
+        searchItemCol.click(function () {
             // console.log($(this).attr("data-city"));
             populateWeather($(this).attr("data-city"));
         });
         searchHistoryRow.append(searchItemCol);
     }
+    if (searchHistory.length > 0) {
+        var clearHistoryCol = $("<div>").addClass("col-12 p-1 clear-history").text("Clear History");
+        searchHistoryRow.append(clearHistoryCol);
+        clearHistoryCol.click(clearHistory);
+    }
+}
+
+var clearHistory = function () {
+    localStorage.clear();
+    searchHistoryRow.empty();
+    searchHistory = [];
 }
 
 //Take city and updates weather data based on that city
-function populateWeather(city) {
-//Set api call variables
+function populateWeather(city, lat = "", lon = "") {
+    //Set api call variables
     var endpoint = "weather?"; //
-    var selectedCity = "q=" + city;
+    if (lat === "" && lon === "") {
+        var selectedCity = "q=" + city;
+    } else {
+        var selectedCity = "lat=" + lat + "&lon=" + lon;
+    }
+
     var apiKey = "&APPID=ce57d686b7490927cdc52deefe0edbc7";
     var queryURL = "https://api.openweathermap.org/data/2.5/"
     //api call
@@ -123,7 +148,7 @@ function populateWeather(city) {
                 fiveDayForecastRow.empty();
                 fiveDayForecastRow.append(fiveDayForecastTitleCol);
                 fiveDayForecastTitleCol.append($("<h4>").text("5-Day Foreacast"));
-                
+
                 //create five-day forecast array from hourly array (response gives hourly array)
                 hourlyArray = response.list;
                 fiveDayArray = [];
@@ -157,6 +182,8 @@ function populateWeather(city) {
                     forecastBlock.append(forecastBlockTemp);
                     forecastBlock.append(forecastBlockHumidity);
                     fiveDayForecastRow.append(forecastBlock);
+                    //Show the weatherCol
+                    weatherCol.show();
                     // console.log(moment.unix(element.dt).format("dddd HH:MM"));
                     // console.log(element);
                 }
@@ -171,6 +198,12 @@ searchButton.click(function (event) {
     event.preventDefault()
     var city = searchBox.val();
     populateWeather(city);
+});
+
+currentLocationCol.click(function (event) {
+    navigator.geolocation.getCurrentPosition(function (position) {
+        populateWeather("coords", position.coords.latitude, position.coords.longitude);
+    });
 });
 
 //Innitialize search history

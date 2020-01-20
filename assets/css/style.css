@@ -6,6 +6,22 @@
     margin-bottom: 3px;
 }
 
+.current-location-col:hover{
+    background-color: rgb(86, 255, 199);
+}
+.current-location-col{
+    background-color: rgb(191, 255, 234);
+    margin-bottom: 3px;
+}
+
+.clear-history:hover{
+    background-color: rgb(255, 176, 176);
+}
+.clear-history{
+    background-color: rgb(255, 219, 219);
+    margin-bottom: 3px;
+}
+
 .input{
     margin: 0 7px 7px 0;
     height: 44px;
