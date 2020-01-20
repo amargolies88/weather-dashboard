@@ -1,20 +1,22 @@
-//Store Search History
-//If there is not yet a searchhistory, create variable for search history, otherwise, store user's history in variable, searchHistory
+//If there is not yet a search history, create variable for search history, otherwise, store user's history in variable, searchHistory
 if (localStorage.getItem("weathersearchhistory") === null) {
     var searchHistory = [];
 } else {
     var searchHistory = JSON.parse(localStorage.getItem("weathersearchhistory"));
 }
 
+//Takes temp in kelvin returns temp in fahrenheit
 function ktof(k) {
     return ((k - 273.15) * (9 / 5)) + 32;
 }
 
+//Takes temp in kelvin returns temp in celsius
 function ktoc(k) {
     return (k - 273.15);
 }
 
-//function to store history
+//Takes string and stores in searchHistory[]
+//and stringify it and store in localStorage key "weathersearchhistory"
 function storeHistory(searchItem) {
     searchHistory.push(searchItem);
     localStorage.setItem("weathersearchhistory", JSON.stringify(searchHistory));
@@ -50,15 +52,16 @@ var humidityDisplay = $("<p>").addClass("humidity-display");
 var windSpeedDisplay = $("<p>").addClass("wind-speed-display");
 var uvIndexDisplay = $("<p>").addClass("uv-index-display");
 var fiveDayForecastCol = $("<div>").addClass("col-12 five-day-forecast-col")
-var fiveDayForecastRow = $("<div>").addClass("row no-gutters row-cols-5 five-day-forecast-row");
+var fiveDayForecastRow = $("<div>").addClass("row no-gutters five-day-forecast-row");
 var fiveDayForecastTitleCol = $("<div>").addClass("col-12 mb-1 p-1 five-day-forecast-title");
 
 
-//Append all of that
+//Append page structure
 main.append(searchCol.append(searchBoxRow.append(searchForm.append(searchBox, searchButton)), searchHistoryRow), weatherCol.append(weatherRow.append(currentWeatherCol.append(cityTitle, tempDisplay, humidityDisplay, windSpeedDisplay, uvIndexDisplay), fiveDayForecastCol.append(fiveDayForecastRow.append(fiveDayForecastTitleCol)))));
 searchButton.append($("<svg>").addClass("svg-search").attr("data-feather", "search"));
 feather.replace({ class: 'svg-search', 'stroke-width': 4, 'width': 30, 'height': 30 });
 
+//Function to update search history
 function populateHistory() {
     searchHistoryRow.empty();
     for (let i = 0; i < searchHistory.length; i++) {
@@ -72,6 +75,7 @@ function populateHistory() {
     }
 }
 
+//Take city and updates weather data based on that city
 function populateWeather(city) {
 
     var endpoint = "weather?";
@@ -121,7 +125,7 @@ function populateWeather(city) {
                     const element = fiveDayArray[i];
                     var forecastBlock = $("<div>").addClass("text-nowrap p-2 col-12 col-sm forecast-block forecast-block-" + (i + 1));
                     var forecastBlockDate = $("<h6>").addClass("forecast-block-date");
-                    var forecastBlockIcon = $("<img>").attr("src", "https://openweathermap.org/img/wn/" + element.weather[0].icon + "@2x.png");
+                    var forecastBlockIcon = $("<img>").attr("src", "http://openweathermap.org/img/wn/" + element.weather[0].icon + "@2x.png");
                     var forecastBlockTemp = $("<p>").addClass("forecast-block-temp");
                     var forecastBlockHumidity = $("<p>").addClass("forecast-block-humidity");
 
@@ -143,7 +147,7 @@ function populateWeather(city) {
     });
 }
 
-//button function
+//Search button click
 searchButton.click(function (event) {
     event.preventDefault()
     var city = searchBox.val();
@@ -154,8 +158,10 @@ searchButton.click(function (event) {
     }
 });
 
+//Innitialize search history
 populateHistory();
 
+//Innitialize weather data with last searched item if it exists
 if (searchHistory[searchHistory.length - 1] !== undefined) {
     populateWeather(searchHistory[searchHistory.length - 1]);
 }
