@@ -34,7 +34,7 @@ container.append(header.append($("<h1>").text("Weather Dashboard")));
 var main = $("<div>").addClass("row no-gutters w-100 main");
 container.append(main);
 
-//Create page structure
+//Create page elements
 var searchCol = $("<div>").addClass("col-12 col-md-6 p-0 p-sm-1 p-md-2 p-lg-5 search-col");
 var searchBoxRow = $("<div>").addClass("row no-gutters search-box-row");
 var searchForm = $("<form>").addClass("search-form w-100 h-100 d-flex align-items-center");
@@ -66,9 +66,9 @@ function populateHistory() {
     searchHistoryRow.empty();
     for (let i = 0; i < searchHistory.length; i++) {
         const searchItem = searchHistory[i];
-        searchItemCol = $("<div>").addClass("col-12 search-item search-item-" + searchItem).attr("data-city", searchItem).text(searchItem);
+        var searchItemCol = $("<div>").addClass("col-12 search-item search-item-" + searchItem).attr("data-city", searchItem).text(searchItem);
         searchItemCol.click(function(){
-            console.log($(this).attr("data-city"));
+            // console.log($(this).attr("data-city"));
             populateWeather($(this).attr("data-city"));
         });
         searchHistoryRow.append(searchItemCol);
@@ -77,59 +77,78 @@ function populateHistory() {
 
 //Take city and updates weather data based on that city
 function populateWeather(city) {
-
-    var endpoint = "weather?";
+//Set api call variables
+    var endpoint = "weather?"; //
     var selectedCity = "q=" + city;
     var apiKey = "&APPID=ce57d686b7490927cdc52deefe0edbc7";
     var queryURL = "https://api.openweathermap.org/data/2.5/"
+    //api call
     $.ajax({
         url: queryURL + endpoint + selectedCity + apiKey,
         method: "GET"
     }).then(function (response) {
-        cityTitle.text(response.name);
+        city = response.name + ", " + response.sys.country;
+        if (!searchHistory.includes(city)) {
+            storeHistory(city);
+            populateHistory();
+        }
+        //Update current weather data with api call data
+        cityTitle.text(city);
         tempDisplay.text(`Temperature: ${Math.round(ktof(response.main.temp))} °F`);
         humidityDisplay.text(`Humidity: ${response.main.humidity}%`);
         windSpeedDisplay.text(`Wind Speed: ${response.wind.speed} mph`);
-        console.log(response);
+        // console.log(response);
 
+        //Change endpoint and make new api call because UV data is on a new endpoint
         endpoint = "uvi?";
+        //set coordinate variables for api call
         var lat = "&lat=" + response.coord.lat;
         var lon = "&lon=" + response.coord.lon;
-
         $.ajax({
             url: queryURL + endpoint + apiKey + lat + lon,
             method: "GET"
         }).then(function (response) {
-            console.log(response);
+            // console.log(response);
             uvIndexDisplay.text(`UV Index: ${response.value}`);
+
+            //Change endpoint for next api call for five-day forecast
             endpoint = "forecast?";
             $.ajax({
                 url: queryURL + endpoint + selectedCity + apiKey,
                 method: "GET"
             }).then(function (response) {
-                console.log(response);
+                // console.log(response);
+                //Set five-day forecast elements
                 fiveDayForecastTitleCol.empty();
                 fiveDayForecastRow.empty();
                 fiveDayForecastRow.append(fiveDayForecastTitleCol);
                 fiveDayForecastTitleCol.append($("<h4>").text("5-Day Foreacast"));
+                
+                //create five-day forecast array from hourly array (response gives hourly array)
                 hourlyArray = response.list;
                 fiveDayArray = [];
                 for (let i = 0; i < hourlyArray.length; i++) {
                     const element = hourlyArray[i];
                     // console.log(moment.unix(element.dt).format("H"));
-                    if (moment.unix(element.dt).format("H") === "13" && moment.unix(element.dt).format("dddd") !== moment().format("dddd")) {
+
+                    //push element into fiveDayArray if element's hour is 13 (1:00pm)
+                    if (moment.unix(element.dt).format("H") === "13") {
                         fiveDayArray.push(element);
                     }
                 }
+
+                //Create html elements based on fiveDayArray
                 for (let i = 0; i < fiveDayArray.length; i++) {
                     const element = fiveDayArray[i];
+
                     var forecastBlock = $("<div>").addClass("text-nowrap p-2 col-12 col-sm forecast-block forecast-block-" + (i + 1));
                     var forecastBlockDate = $("<h6>").addClass("forecast-block-date");
-                    var forecastBlockIcon = $("<img>").attr("src", "http://openweathermap.org/img/wn/" + element.weather[0].icon + "@2x.png");
+                    var forecastBlockIcon = $("<img>").addClass("forecast-block-img");
                     var forecastBlockTemp = $("<p>").addClass("forecast-block-temp");
                     var forecastBlockHumidity = $("<p>").addClass("forecast-block-humidity");
 
                     forecastBlockDate.text(moment.unix(element.dt).format("L"));
+                    forecastBlockIcon.attr("src", "http://openweathermap.org/img/wn/" + element.weather[0].icon + "@2x.png");
                     forecastBlockTemp.text(`Temperature: ${Math.round(ktof(element.main.temp))} °F`);
                     forecastBlockHumidity.text(`Humidity: ${element.main.humidity}%`);
 
@@ -138,10 +157,10 @@ function populateWeather(city) {
                     forecastBlock.append(forecastBlockTemp);
                     forecastBlock.append(forecastBlockHumidity);
                     fiveDayForecastRow.append(forecastBlock);
-                    console.log(moment.unix(element.dt).format("dddd HH:MM"));
-                    console.log(element);
+                    // console.log(moment.unix(element.dt).format("dddd HH:MM"));
+                    // console.log(element);
                 }
-                console.log("stored " + city);
+                // console.log("stored " + city);
             });
         });
     });
@@ -152,10 +171,6 @@ searchButton.click(function (event) {
     event.preventDefault()
     var city = searchBox.val();
     populateWeather(city);
-    if (!searchHistory.includes(city)) {
-        storeHistory(city);
-        populateHistory();
-    }
 });
 
 //Innitialize search history
