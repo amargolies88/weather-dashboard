@@ -61,6 +61,7 @@ var fiveDayForecastTitleCol = $("<div>").addClass("col-12 forecast-block");
 
 if (localStorage.getItem("weathersearchhistory") === null) {
     weatherCol.hide();
+    fiveDayForecastCol.hide();  
 }
 
 console.log(localStorage.getItem("weathersearchhistory"));
@@ -92,6 +93,7 @@ function populateHistory() {
     }
 }
 
+//Function for button that clears search history and local storage
 var clearHistory = function () {
     localStorage.clear();
     searchHistoryRow.empty();
@@ -101,7 +103,7 @@ var clearHistory = function () {
 //Take city and updates weather data based on that city
 function populateWeather(city, lat = "", lon = "") {
     //Set api call variables
-    var endpoint = "weather?"; //
+    var endpoint = "weather?";
     if (lat === "" && lon === "") {
         var selectedCity = "q=" + city;
     } else {
@@ -189,6 +191,7 @@ function populateWeather(city, lat = "", lon = "") {
                     fiveDayForecastRow.append(forecastBlock);
                     //Show the weatherCol
                     weatherCol.show();
+                    fiveDayForecastCol.show();
                     // console.log(moment.unix(element.dt).format("dddd HH:MM"));
                     // console.log(element);
                 }
